@@ -9,7 +9,7 @@ app.use(cors())    //middleware
 app.use(bodyParser.json())  //middleware
 //file upload
 const fileUpload = require('express-fileupload');
-app.use(express.static('doctors'));   //doctors name folder create hbe jekhane upload kora pic gulu takhbe
+app.use(express.static('doctors'));
 app.use(fileUpload());
 const MongoClient = require('mongodb').MongoClient;
 
@@ -26,28 +26,23 @@ client.connect(err => {
     const reviewCollection = client.db("service").collection("review");
     const adminCollection = client.db("service").collection("admin");
 
- 
 
+// Post api
     app.post('/addService', (req, res) => {
         const file = req.files.file  //file means => type=file => client site
         const price = req.body.price
         const title = req.body.title
         const description = req.body.description
-
-        // console.log(price, title, description, file);
-
-
-        // uploadPath = __dirname + '/doctors' + file.name;
         const filePath = `${__dirname}/doctors/${file.name}`
         file.mv(filePath, (err) => {
             if (err) {
                 res.status(500).send({ msg: "failed to upload" });
             }
-            // res.status(200).send({ name: file.name });
+      
         });
 
         const newImg = file.data;
-        // const newImg = fs.readFileSync(filePath)
+        
         const encImg = newImg.toString('base64');
         var image = {
             contentType: file.mimetype,
@@ -69,35 +64,35 @@ client.connect(err => {
                 })
             })
     })
-
+//get service api
     app.get('/service', (req, res) => {
-        // res.send("data")
+        
         serviceCollection.find({})
             .toArray((err, documents) => {
                 res.send(documents);
             })
     })
-
+// delete service 
     app.delete('/delete/:id', (req, res) => {
-        // console.log(req.params.id);
+        
         serviceCollection.deleteOne({
             _id: ObjectId(req.params.id)
-            // status: "D"
+            
         })
             .then((result) => {
-                
+
                 res.send(result.deletedCount > 0)
             })
     })
 
-
+// get service api
     app.get('/service/:id', (req, res) => {
         serviceCollection.find({ _id: ObjectId(req.params.id) })
             .toArray((err, documents) => {
                 res.send(documents[0])
             })
     })
-
+// insert adsbooking api
     app.post('/addBooking', (req, res) => {    //for data create
         const book = req.body
         console.log(book);
@@ -105,20 +100,20 @@ client.connect(err => {
             .then(result => {
 
                 console.log(result.insertedCount);
-                
+
                 res.send(result.insertedCount > 0)
             })
-            .catch(err=>console.log(err))
+            .catch(err => console.log(err))
     })
 
-            // delete api my order
-            app.delete('/addBooking/:id', async (req, res) => {
-                const id = req.params.id;
-                const query = { _id: ObjectId(id) };
-                const result = await BookCollection.deleteOne(query);
-                res.json(result);
-            })
-
+    // delete api my order
+    app.delete('/addBooking/:id', async (req, res) => {
+        const id = req.params.id;
+        const query = { _id: ObjectId(id) };
+        const result = await BookCollection.deleteOne(query);
+        res.json(result);
+    })
+// get api
     app.get('/getBooking', (req, res) => {
         BookCollection.find({})
             .toArray((err, documents) => {
@@ -127,37 +122,20 @@ client.connect(err => {
     })
 
 
-
+// get bookcollection api
     app.get('/bookCollection', (req, res) => {
         console.log(req.query.email);
         BookCollection.find({ email: req.query.email })
             .toArray((err, items) => {
-                
+
                 res.send(items)
             })
 
     })
-
-    // app.patch('/update/:id', (req, res) => {
-    //     console.log(req.body.update);
-    //     BookCollection.updateOne(
-    //         {
-    //             _id: ObjectId(req.params.id)
-    //         },
-    //         {
-    //             $set: { status: req.body.update }
-    //         }
-    //     )
-    //         .then((result) => {
-    //             res.send(result.modifiedCount > 0)
-    //         })
-
-    // })
-
-
+// post addReview api
     app.post('/addReview', (req, res) => {    //for data create
         const order = req.body
-        
+
         reviewCollection.insertOne(order)
             .then(result => {
 
@@ -166,6 +144,7 @@ client.connect(err => {
                 res.send(result.insertedCount > 0)
             })
     })
+// get AddReview
     app.get('/addReview', (req, res) => {    //for data create
         reviewCollection.find({})
             .toArray((err, documents) => {
@@ -177,7 +156,7 @@ client.connect(err => {
     //make admin
     app.post('/makeAdmin', (req, res) => {
         const user = req.body;
-        
+
         adminCollection.insertOne(user)
             .then(result => {
                 res.send(result.insertedCount > 0)
@@ -198,7 +177,7 @@ client.connect(err => {
 })
 
 app.get('/', (req, res) => {
-    res.send('GET request to the homepage')
+    res.send('Server is Running')
 })
 
 app.listen(port, () => {
